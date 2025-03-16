@@ -1,4 +1,6 @@
 import tkinter as tk
+
+from components.request_tabs import RequestTabs
 from .side_panel import SidePanel
 from .request_body import RequestBodyFrame
 from tkinter import ttk
@@ -55,7 +57,9 @@ class YapLayout(tk.Tk):
         button.grid(row=0, column=2, sticky="ew")
 
         # Request Body Frame (Make sure to pack it)
-        self.request_area = RequestBodyFrame(self.main_area)
-        self.request_area.pack(fill="both", padx=10, pady=10)
+        self.request_tabs = RequestTabs(self.main_area)
+        self.request_tabs.pack(fill="both", padx=10, pady=10)
+
+
 
         self.paned_window.paneconfig(self.main_area, minsize=200)
