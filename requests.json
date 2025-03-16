@@ -1,13 +1,13 @@
 [
-  {
-    "text": "Test",
-    "uuid": "02b12258-336b-4a43-9adb-4d029053a244",
-    "children": [
-      {
-        "text": "CreateUser",
-        "uuid": "c6ae93ff-be13-4328-b4a0-2906b2775cef",
-        "children": []
-      }
-    ]
-  }
+    {
+        "text": "Test",
+        "uuid": "02b12258-336b-4a43-9adb-4d029053a244",
+        "children": [
+            {
+                "text": "CreateUser",
+                "uuid": "c6ae93ff-be13-4328-b4a0-2906b2775cef",
+                "children": []
+            }
+        ]
+    }
 ]

@@ -1,42 +1,47 @@
-import tkinter as tk
-from tkinter import ttk
+import customtkinter as ctk
 import json
 import re
 
-class RequestBodyFrame(tk.Frame):
+class RequestBodyFrame(ctk.CTkFrame):
     def __init__(self, parent, **kwargs):
         super().__init__(parent, **kwargs)
 
-        # Configure grid layout for resizing
+        # Configure grid layout (Fixed Side Panel)
         self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)  # Content is resizable
+        self.grid_columnconfigure(1, weight=0)  # Fixed side panel
 
-        # Create a scrollable Text widget
-        self.text = tk.Text(self, wrap="word", undo=True, font=("Courier", 12))
-        self.text.grid(row=0, column=0, sticky="nsew", padx=(10, 0), pady=10)
+        # Create a scrollable Textbox
+        self.text = ctk.CTkTextbox(self, wrap="word", font=("Courier", 12))
+        self.text.grid(row=0, column=0, sticky="nsew", padx=(0, 0), pady=0)
 
-        # Scrollbar
-        scrollbar = ttk.Scrollbar(self, command=self.text.yview)
-        scrollbar.grid(row=0, column=1, sticky="ns", padx=(0, 10))
-        self.text.config(yscrollcommand=scrollbar.set)
+        # Fixed Scrollbar (Side Panel)
+        scrollbar = ctk.CTkScrollbar(self, command=self.text.yview)
+        scrollbar.grid(row=0, column=1, sticky="ns", padx=(0, 0))
 
-        # Configure syntax highlighting tags
-        self.text.tag_configure("key", foreground="blue")
-        self.text.tag_configure("string", foreground="green")
-        self.text.tag_configure("number", foreground="purple")
-        self.text.tag_configure("boolean", foreground="red")
-        self.text.tag_configure("null", foreground="orange")
+        # Prevent scrollbar from resizing
+        scrollbar.grid_propagate(False)
 
-        # Bracket matching colors (alternating for depth levels)
-        self.bracket_colors = ["blue", "purple", "orange", "green", "red"]
-        for i, color in enumerate(self.bracket_colors):
-            self.text.tag_configure(f"bracket_{i}", foreground=color)
+        # Disable side panel resizing
+        self.columnconfigure(1, weight=0)
 
-        # Bind event to trigger highlighting
+        # Configure syntax highlighting colors
+        self.colors = {
+            "key": "#56B6C2",
+            "string": "#98C379",
+            "number": "#D19A66",
+            "boolean": "#E06C75",
+            "null": "#C678DD"
+        }
+
+        # Bracket colors
+        self.bracket_colors = ["#56B6C2", "#D19A66", "#C678DD", "#98C379", "#E06C75"]
+
+        # Bind event for highlighting
         self.text.bind("<KeyRelease>", lambda event: self.highlight_json())
 
     def highlight_json(self):
-        """ Apply syntax highlighting to JSON text and bracket matching """
+        """ Apply syntax highlighting to JSON text """
         text = self.text.get("1.0", "end-1c")
 
         try:
@@ -44,47 +49,45 @@ class RequestBodyFrame(tk.Frame):
         except json.JSONDecodeError:
             return  # Skip highlighting if JSON is invalid
 
-        # Remove existing highlights
-        for tag in ["key", "string", "number", "boolean", "null"]:
-            self.text.tag_remove(tag, "1.0", "end")
-
-        # Remove old bracket highlights
-        for i in range(len(self.bracket_colors)):
-            self.text.tag_remove(f"bracket_{i}", "1.0", "end")
+        # Clear previous formatting
+        self.text.configure(state="normal")
+        self.text.tag_remove("all", "1.0", "end")
 
         # Regex patterns for JSON elements
         patterns = {
-            "key": r'(?P<key>"[^"]*")\s*:',   # Matches keys: `"key":`
-            "string": r'(:\s*)(?P<string>"[^"]*")',  # Matches values: `: "value"`
-            "number": r'(:\s*)(?P<number>-?\d+(\.\d+)?)',  # Matches numbers: `: 123, -12.5`
-            "boolean": r'(:\s*)(?P<boolean>true|false)',  # Matches true/false
-            "null": r'(:\s*)(?P<null>null)'  # Matches null
+            "key": r'(?P<key>"[^"]*")\s*:',
+            "string": r'(:\s*)(?P<string>"[^"]*")',
+            "number": r'(:\s*)(?P<number>-?\d+(\.\d+)?)',
+            "boolean": r'(:\s*)(?P<boolean>true|false)',
+            "null": r'(:\s*)(?P<null>null)'
         }
 
-        # Apply highlighting for JSON syntax
+        # Apply syntax highlighting
         for tag, pattern in patterns.items():
             for match in re.finditer(pattern, text):
                 if tag in match.groupdict():
                     start, end = match.span(tag)
                     self.text.tag_add(tag, f"1.0+{start}c", f"1.0+{end}c")
+                    self.text.tag_config(tag, foreground=self.colors[tag])
 
         # Apply bracket highlighting
         self.highlight_brackets(text)
 
     def highlight_brackets(self, text):
-        """ Highlight matching brackets `{}` and `[]` with alternating colors """
-        stack = []  # Stack to keep track of bracket depth
+        """ Highlight matching brackets `{}` and `[]` """
+        stack = []
 
         for i, char in enumerate(text):
             if char in "{}[]":
                 if char in "{[":
-                    stack.append((i, char))  # Push opening bracket with position
+                    stack.append((i, char))
                 elif char in "}]":
                     if stack:
-                        start_idx, opening_bracket = stack.pop()
-                        depth = len(stack) % len(self.bracket_colors)  # Cycle colors
-                        color_tag = f"bracket_{depth}"
+                        start_idx, _ = stack.pop()
+                        depth = len(stack) % len(self.bracket_colors)
+                        color = self.bracket_colors[depth]
 
-                        # Highlight opening and closing brackets
-                        self.text.tag_add(color_tag, f"1.0+{start_idx}c", f"1.0+{start_idx+1}c")
-                        self.text.tag_add(color_tag, f"1.0+{i}c", f"1.0+{i+1}c")
+                        # Highlight both opening and closing brackets
+                        self.text.tag_add(f"bracket_{depth}", f"1.0+{start_idx}c", f"1.0+{start_idx+1}c")
+                        self.text.tag_add(f"bracket_{depth}", f"1.0+{i}c", f"1.0+{i+1}c")
+                        self.text.tag_config(f"bracket_{depth}", foreground=color)

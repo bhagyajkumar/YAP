@@ -2,12 +2,11 @@ import tkinter as tk
 from .side_panel import SidePanel
 from .request_body import RequestBodyFrame
 from tkinter import ttk
+import customtkinter as ctk
 
 class YapLayout(tk.Tk):
     def __init__(self):
         super().__init__()
-
-        self.state = {}
 
         self.title("Modular Side Panel Example")
         self.geometry("800x500")
@@ -41,20 +40,22 @@ class YapLayout(tk.Tk):
 
         # Dropdown for HTTP methods
         options = ["GET", "POST", "PUT", "DELETE"]
-        method_var = tk.StringVar(value=options[0])  # Default to GET
-        dropdown = ttk.Combobox(input_area, textvariable=method_var, values=options, state="readonly", width=7)
+        method_var = ctk.StringVar(value=options[0])  # Default to GET
+
+        # Create a CTkComboBox dropdown
+        dropdown = ctk.CTkComboBox(input_area, values=options, variable=method_var, width=90)
         dropdown.grid(row=0, column=0, padx=(0, 5), sticky="ew")
 
         # Entry field
-        entry = tk.Entry(input_area)
+        entry = ctk.CTkEntry(input_area)
         entry.grid(row=0, column=1, padx=(0, 5), sticky="ew")
 
         # Submit button
-        button = tk.Button(input_area, text="Submit")
+        button = ctk.CTkButton(input_area, text="Send")
         button.grid(row=0, column=2, sticky="ew")
 
         # Request Body Frame (Make sure to pack it)
         self.request_area = RequestBodyFrame(self.main_area)
-        self.request_area.pack(fill="both", padx=10, pady=2)
+        self.request_area.pack(fill="both", padx=10, pady=10)
 
         self.paned_window.paneconfig(self.main_area, minsize=200)
