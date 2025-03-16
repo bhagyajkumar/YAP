@@ -15,13 +15,6 @@ class RequestBodyFrame(ctk.CTkFrame):
         self.text = ctk.CTkTextbox(self, wrap="word", font=("Courier", 12))
         self.text.grid(row=0, column=0, sticky="nsew", padx=(0, 0), pady=0)
 
-        # Fixed Scrollbar (Side Panel)
-        scrollbar = ctk.CTkScrollbar(self, command=self.text.yview)
-        scrollbar.grid(row=0, column=1, sticky="ns", padx=(0, 0))
-
-        # Prevent scrollbar from resizing
-        scrollbar.grid_propagate(False)
-
         # Disable side panel resizing
         self.columnconfigure(1, weight=0)
 
